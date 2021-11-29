@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Week 11 Assignment</title>
+		<link rel="stylesheet" href="style.css" />
+	</head>
+	<body>
+		<h1>Employees</h1>
+		<div class="content">
+			<form id="add-user-form">
+				<input type="text" name="name" placeholder="Employee name" />
+				<input type="text" name="age" placeholder="Employee age" />
+				<input type="text" name="email" placeholder="Employee email" />
+				<button>Add Employee</button>
+			</form>
+			<ul id="user-list"></ul>
+		</div>
+		<script type="module">
+			// Import the functions you need from the SDKs you need
+			import { initializeApp } from "https://www.gstatic.com/firebasejs/9.2.0/firebase-app.js";
+			import {
+				getFirestore,
+				collection,
+				getDocs,
+				addDoc,
+				doc,
+				deleteDoc,
+				query,
+				where,
+				updateDoc,
+			} from "https://www.gstatic.com/firebasejs/9.2.0/firebase-firestore.js";
+			// TODO: Add SDKs for Firebase products that you want to use
+			// https://firebase.google.com/docs/web/setup#available-libraries
+
+			// Your web app's Firebase configuration
+			// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+			const firebaseConfig = {
+				apiKey: "AIzaSyD8HWoDug5k9ncxFT59s5pfHpcoYzeAcZk",
+				authDomain: "week-11-assignment.firebaseapp.com",
+				projectId: "week-11-assignment",
+				storageBucket: "week-11-assignment.appspot.com",
+				messagingSenderId: "588991574386",
+				appId: "1:588991574386:web:63a51a1c9636a7bb77edeb",
+				measurementId: "G-T9FHCZG0V5",
+			};
+
+			// Initialize Firebase
+			const app = initializeApp(firebaseConfig);
+			const db = getFirestore(app);
+			async function getUsers(db) {
+				const usersCol = collection(db, "users");
+				const usersSnapshot = await getDocs(usersCol);
+				const usersList = usersSnapshot.docs.map((doc) => doc);
+				return usersList;
+			}
+
+			const usersList = document.querySelector("#user-list");
+			const form = document.querySelector("#add-user-form");
+
+			function renderUsers(dc) {
+				let li = document.createElement("li");
+				let name = document.createElement("span");
+				let age = document.createElement("span");
+				let email = document.createElement("span");
+				let cross = document.createElement("div");
+
+				li.setAttribute("data-id", dc.id);
+				name.textContent = dc.data().name;
+				age.textContent = dc.data().age;
+				email.textContent = dc.data().email;
+				cross.textContent = "x";
+
+				li.appendChild(name);
+				li.appendChild(age);
+				li.appendChild(email);
+				li.appendChild(cross);
+				// console.log(doc.name);
+				usersList.appendChild(li);
+				cross.addEventListener("click", (e) => {
+					e.stopPropagation();
+					let id = e.target.parentElement.getAttribute("data-id");
+					deleteDoc(doc(db, "users", id));
+				});
+			}
+			// console.log(
+			// 	getRestaurants(db).then((snapshot) => {
+			// 		snapshot.forEach((doc) => {
+			// 			console.log(doc.data());
+			// 		});
+			// 	})
+			// );
+			// const restaurants = getRestaurants(db).then((snapshot) => {
+			// 	snapshot.forEach((doc) => {
+			// 		renderRestaurant(doc.data());
+			// 	});
+			// });
+
+			const users = getDocs(collection(db, "users")).then((snapshot) => {
+				snapshot.forEach((doc) => {
+					renderUsers(doc);
+				});
+			});
+
+			const q = query(collection(db, "users"), where("age", "==", "28"));
+			const querySnapshot = await getDocs(q);
+			querySnapshot.forEach((doc) => {
+				console.log(doc.id, "=>", doc.data());
+			});
+
+			const upDoc = doc(db, "users", "bniZDEEi74jr7O8zP3tL");
+
+			updateDoc(upDoc, {
+				name: "Jacob",
+			});
+
+			form.addEventListener("submit", (e) => {
+				e.preventDefault();
+				const docRef = addDoc(collection(db, "users"), {
+					age: form.age.value,
+					name: form.name.value,
+					email: form.email.value,
+				});
+			});
+		</script>
+		<script src="app.js"></script>
+	</body>
+</html>
